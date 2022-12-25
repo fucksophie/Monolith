@@ -1,39 +1,118 @@
 import { ConnInfo, serve } from "https://deno.land/std@0.170.0/http/server.ts";
 import * as queryString from "https://deno.land/x/querystring@v1.0.2/mod.js";
-import { Server, ServerList } from "./ServerList.ts";
 import { Md5 } from "./libs/md5.ts"
-import { HB, UnparsedHB } from "./data.ts";
-
-function isNumeric(value: string) {
-    return /^-?\d+$/.test(value);
-}
+import { hashSalt } from "./config.ts"
+import { ServerList } from "./libs/ServerList.ts";
+import { HB, UnparsedHB } from "./libs/Parsing.ts";
+import { Session, User } from "./libs/User.ts";
+import { Server } from "./libs/Server.ts";
+import { customHash, error, isNumeric } from "./deps.ts";
+import { Database } from "./libs/Database.ts";
 
 const serverList = new ServerList();
-const salt = "AAAAABBBBCCCC1238578SF!!" // this has to be never-changing (please)
+const DB = new Database();
 
 async function handler(req: Request, conn: ConnInfo): Promise<Response> {
     const path = new URL(req.url);
 
     if(path.pathname == "/api/login") {
-        const resp = new Response(`{"username":"cock","token":"ihatemylife3000"}`);
-        resp.headers.append("set-cookie", "session=ihatemylife3000; HttpOnly; Path=/")
-        return resp;
+        if(req.method == "POST") {
+            // Recieving post, new session trying to be created.
+            let data;
+
+            try {
+                data = queryString.parse(new TextDecoder().decode(await req.arrayBuffer())) as unknown as { username: string, token: string, password: string }
+            } catch {
+                return error("failed to parse post data", 400);
+            }
+
+            const user = DB.getByUsername(data.username);
+
+            if(!user) {
+                return error("User does not exist", 404)
+            }
+
+            if(user.password == await customHash(data.password)) {
+                const session = new Session();
+                session.ownedBy = user.username;
+                user.openSessions.push(session);
+                DB.setWithUsername(user.username, user);
+
+                const resp = new Response(`{"username":"cock","token":"${session}"}`);
+                resp.headers.append("set-cookie", `session=${session}; HttpOnly; Path=/`)
+                return resp;
+            } else {
+                return error("Password is incorrect", 403)
+            }
+        } else {
+            if(req.headers.has("cookie")) {
+                const session = req.headers.get("cookie")?.replace("session=", "")
+
+                if(session) {
+                    const user = DB.getBySession(session!);
+
+                    if(!user) {
+                        return error(`{"authenicated":false}`, 200); // no clue why the client wants 200
+                    } else {
+                        const resp = new Response(`{"username":"${user.username}","token":"${session}"}`);
+                        resp.headers.append("set-cookie",`session=${session}; HttpOnly; Path=/`);
+                        return resp
+                    }
+
+                } else {
+                    return error(`{"authenicated":false}`, 200); // no clue why the client wants 200
+                }
+            }
+        }
     }
 
+
+    if(path.pathname == "/api/register" && req.method == "POST") {
+        let data;
+
+        try {
+            const body = new TextDecoder().decode(await req.arrayBuffer())
+            data = JSON.parse(body) as unknown as { username: string, password: string }
+        } catch {
+            return error("json fail", 400);
+        }
+
+        if(!(
+            typeof data.username == "string" &&
+            typeof data.password == "string"
+        )) {
+            return error("username and password have to be strings", 422);
+        }
+
+        if(DB.getByUsername(data.username)) {
+            return error("username already exists", 409);
+        }
+
+        const user = new User();
+
+        user.username = data.username;
+        user.password = await customHash(data.password);
+
+        DB.setWithUsername(user.username, user); // lets say were adding to a db here
+
+        return new Response("suceeded")
+    }
     if(path.pathname == "/heartbeat.jsp") {
         let hbData: UnparsedHB;
         const ip = conn.remoteAddr as Deno.NetAddr;
 
         if(req.method == "POST") {
-            hbData = queryString.parse(new TextDecoder().decode(await req.arrayBuffer())) as unknown as UnparsedHB
+            try {
+                hbData = queryString.parse(new TextDecoder().decode(await req.arrayBuffer())) as unknown as UnparsedHB
+            } catch {
+                return error("failed to parse post data", 400);
+            }
         } else {
             hbData = queryString.parse(path.search) as unknown as UnparsedHB
         }
 
         if(!(hbData.max && hbData.name && hbData.port && hbData.public && hbData.salt && hbData.users && hbData.version)) {
-            console.log("Request failed. ", req.url)
-
-            return new Response("how do i return a 403 (ur request invalid)");
+            return error("ur request invalid", 422);
         }
 
         if(!(
@@ -42,37 +121,29 @@ async function handler(req: Request, conn: ConnInfo): Promise<Response> {
             isNumeric(hbData.users) &&
             isNumeric(hbData.version)
         )) {
-            return new Response("how do i return a 403 (max, port, users, or version are not numbers)");
+            return error("max, port, users, or version are not numbers", 422);
         }
 
         if(!(hbData.public == "True" || hbData.public == "False")) {
-            return new Response("how do i return a 403 (public is supposed to be True or False)");
+            return error("public is supposed to be True or False", 422);
         }
 
         if(!(
             typeof hbData.salt == "string" &&
             typeof hbData.name == "string"
         )) {
-            return new Response("how do i return a 403 (salt and name have to be strings)");
+            return error("salt and name have to be strings", 422);
         }
 
         if(hbData.software) {
             if(typeof hbData.software !== "string") {
-                return new Response("how do i return a 403 (software has to be a string)");
+                return error("software has to be a string", 422);
             }
         }
 
-        const hash = new Md5().update(salt + hbData.salt + ip.hostname).toString();
+        const hash = new Md5().update(hashSalt + hbData.salt + ip.hostname).toString();
 
-        const hb = new HB();
-        hb.max = +hbData.max
-        hb.name = hbData.name
-        hb.port = +hbData.port
-        hb.public = hbData.public
-        hb.salt = hbData.salt
-        hb.users = +hbData.users
-        hb.version = +hbData.version
-        hb.software = hbData.software;
+        const hb = new HB(hbData);
 
         if(!serverList.servers.get(hash)) {
             console.log(`(CREATED) Server update from ${hb.name}. Users: ${hb.users}, salt: ${hb.salt}, hash: ${hash}`)
@@ -87,12 +158,8 @@ async function handler(req: Request, conn: ConnInfo): Promise<Response> {
 
             serverList.servers.set(hash, server);
         } else {
-            console.log(`(UPDATED) Server update from ${hb.name}. Users: ${hb.users}, salt: ${hb.salt}, hash: ${hash}`)
-
-            const server = serverList.servers.get(hash);
-            server?.update(hb);
+            serverList.servers.get(hash)!.update(hb);
         }
-
         return new Response(`${path.origin}/play/${hash}`);
     } else if(path.pathname == "/api/servers") {
         return new Response(
@@ -120,7 +187,7 @@ async function handler(req: Request, conn: ConnInfo): Promise<Response> {
         );
     }
 
-    return new Response("Hello, World!");
+    return new Response("404 Not Found", {status: 404})
 }
 
 

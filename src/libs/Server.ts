@@ -1,6 +1,6 @@
-import { HB } from "./data.ts";
-import { Md5 } from "./libs/md5.ts"
 import { Maxmind } from "https://deno.land/x/maxminddb@v1.2.0/mod.ts"
+import { Md5 } from "./md5.ts";
+import { HB } from "./Parsing.ts";
 
 const mmdb = new Maxmind(await Deno.readFile('./mmdb.mmdb'))
 
@@ -63,19 +63,3 @@ export class Server {
         return md5.toString("hex")
     }
 }
-
-export class ServerList {
-    servers: Map<string, Server> = new Map();
-
-    constructor() {
-        setInterval(()=>{
-            this.servers.forEach(z => {
-                if(!z.serverIsOnline()) {
-                    console.log(`${z.name} Server has died :(`)
-                    z.hooks.onDie.forEach(z => z())
-                }
-            })
-        }, 1000)
-    }
-}
-
