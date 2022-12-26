@@ -5,7 +5,7 @@ export class Session {
   "sessionID": string;
   "ownedBy": string;
 
-  constructor(timeItWouldTake = 5 * 60000) {
+  constructor(timeItWouldTake = 30 * 60000) { // 30 minute long sessions
     this.expiryTime = Date.now() + timeItWouldTake;
     this.sessionID = crypto.randomUUID().replaceAll("-", "");
   }
