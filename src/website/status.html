@@ -26,10 +26,11 @@
         <div class="centered">
             <h1 id="status"></h1>
 
-            <a href="/">click here to go back</a>
+            <a href="/" id="xd">click here to go back</a>
         </div>
 
         <script>
+            document.getElementById("xd").href = document.referrer;
             document.getElementById("status").innerText = decodeURIComponent(location.hash.substring(1));
         </script>
     </body>

@@ -4,7 +4,7 @@
         <title>mônolith</title>
         <meta charset="UTF-8">
         <link rel="stylesheet" href="style.css">
-
+        <script src="https://bs-community.github.io/skinview3d/js/skinview3d.bundle.js"></script>
         <meta name="title" content="mônolith">
         <meta name="description" content="entierly opensource classicube.net backend implementation in Typescript">
 
@@ -24,29 +24,54 @@
 
     <body>
         <div class="centered">
-            <h1>Login</h1>
-            <input id="username" type="text" placeholder="username"><br>
-            <input id="password" type="text" placeholder="********"><br>
-
-            <button id="submit">Submit!</button>
+            <h1>Settings</h1>
+            <h2>Auth reports you as <span id="data"></span></h2>
+            <div>
+                <canvas id="skin_container"></canvas>
+            </div>
+            <button style="width:250px;" id="skin">Load a new skin?</button>
         </div>
 
-        <script>
-            document.getElementById("submit").addEventListener("click", async() => {
-                const ff = await fetch("/api/login", {
-                    method: "POST",
-                    body: new URLSearchParams({
-                        username: document.getElementById("username").value,
-                        password: document.getElementById("password").value
-                    }).toString()
-                })
+        <script type="module">
+            let pullAuth = await fetch("/api/whoami");
+            if(!pullAuth.ok) location.href = "/"
 
-                if(ff.ok) {
-                    location.href = "/settings"
-                } else {
-                    location.href = `/status#Failed to login because of HTTP ${ff.status} (${ff.statusText})`
-                }
+            let pullAuthJson = await pullAuth.json();
+
+            document.getElementById("data").innerText = pullAuthJson.username + " with " + pullAuthJson.sessions + " session/s opened.";
+
+            document.getElementById("skin").addEventListener("click", () => {
+                let input = document.createElement('input');
+                input.type = 'file';
+                input.onchange = async _ => {
+                    if(!input.files[0]) {
+                        return;
+                    }
+                    let skinUpdate = await fetch("/api/skinUpdate", {
+                        method: 'POST',
+                        body: await input.files[0].arrayBuffer(),
+                    })
+
+                    if(skinUpdate.ok) {
+                        location.href = "/status#Skin updated!"
+                    } else {
+                        location.href = `/status#Failed to create account because of HTTP ${skinUpdate.status} (${skinUpdate.statusText})`
+                    }
+                };
+                input.click();
             })
+
+            let skinViewer = new skinview3d.SkinViewer({
+                canvas: document.getElementById("skin_container"),
+                width: 300,
+                height: 400,
+                skin: `skin/${pullAuthJson.username}.png`
+            });
+
+            skinViewer.zoom = 0.9;
+            skinViewer.animation = new skinview3d.IdleAnimation();
         </script>
+
+
     </body>
 </html>
