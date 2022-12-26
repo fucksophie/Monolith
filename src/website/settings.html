@@ -26,10 +26,17 @@
         <div class="centered">
             <h1>Settings</h1>
             <h2>Auth reports you as <span id="data"></span></h2>
+            <button style="width:250px;height:50px;" onclick="location.href=`/patching`">how to patch the Classicube client</button>
+
             <div>
                 <canvas id="skin_container"></canvas>
             </div>
-            <button style="width:250px;" id="skin">Load a new skin?</button>
+
+            <button style="width:250px;" id="skin">Load a new skin?</button><br><br>
+            <input type="password" type="password" id="current" placeholder="current password"><br>
+            <input type="password" type="password" id="new" placeholder="new password"><br>
+            <button style="width:250px;" id="changePassword">change your password</button><br>
+
         </div>
 
         <script type="module">
@@ -39,6 +46,22 @@
             let pullAuthJson = await pullAuth.json();
 
             document.getElementById("data").innerText = pullAuthJson.username + " with " + pullAuthJson.sessions + " session/s opened.";
+
+            document.getElementById("changePassword").addEventListener("click", async () => {
+                const ff = await fetch("/api/changePassword", {
+                    method: "POST",
+                    body: JSON.stringify({
+                        currentPassword: document.getElementById("current").value,
+                        password: document.getElementById("new").value
+                    })
+                })
+
+                if(ff.ok) {
+                    location.href = "/status#Password changed! Please log back in."
+                } else {
+                    location.href = `/status#Failed to change password because of HTTP ${ff.status} (${ff.statusText})`
+                }
+            })
 
             document.getElementById("skin").addEventListener("click", () => {
                 let input = document.createElement('input');
@@ -63,8 +86,8 @@
 
             let skinViewer = new skinview3d.SkinViewer({
                 canvas: document.getElementById("skin_container"),
-                width: 300,
-                height: 400,
+                width: 150,
+                height: 200,
                 skin: `skin/${pullAuthJson.username}.png`
             });
 

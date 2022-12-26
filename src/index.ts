@@ -2,7 +2,7 @@ import { ConnInfo, serve } from "https://deno.land/std@0.170.0/http/server.ts";
 import { exists } from "./deps.ts";
 import { Database } from "./libs/Database.ts";
 import { ServerList } from "./libs/ServerList.ts";
-import { login, register } from "./routes/auth.ts";
+import { login, changePassword, register } from "./routes/auth.ts";
 import { skinRender, skinUpdate, whoami } from "./routes/extra.ts";
 import { heartbeat, servers } from "./routes/heartbeat.ts";
 
@@ -17,6 +17,8 @@ async function handler(req: Request, conn: ConnInfo): Promise<Response> {
   if (path.pathname == "/api/register" && req.method == "POST") return register(req);
   if (path.pathname == "/api/servers") return servers(req);
   if (path.pathname == "/api/whoami") return whoami(req);
+  if (path.pathname == "/api/changePassword") return changePassword(req);
+
   if (path.pathname == "/heartbeat.jsp") return heartbeat(req, conn);
 
   // deno-fmt-ignore
@@ -25,7 +27,7 @@ async function handler(req: Request, conn: ConnInfo): Promise<Response> {
 
   // below is the HTTP server.
 
-  if(path.pathname == "/") return passOn("index.html");
+  if (path.pathname == "/") return passOn("index.html");
   const location = path.pathname.substring(1);
 
   if (await exists("website/" + location)) return await passOn(location);

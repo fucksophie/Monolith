@@ -67,6 +67,51 @@ export async function login(req: Request): Promise<Response> {
   return new Response();
 }
 
+export async function changePassword(req: Request): Promise<Response> {
+  let authenicated: User | undefined;
+
+  if (req.headers.has("cookie")) {
+    const session = req.headers.get("cookie")?.replace("session=", "");
+    if (session) authenicated = DB.getBySession(session!);
+  }
+
+  if (!authenicated) return new Response("", { status: 403 });
+
+  let data;
+
+  try {
+    const body = new TextDecoder().decode(await req.arrayBuffer());
+    data = JSON.parse(body) as unknown as {
+      password: string;
+      currentPassword: string;
+    };
+  } catch {
+    return error("json fail", 400);
+  }
+
+  if (
+    !(
+      typeof data.password == "string" &&
+      typeof data.currentPassword == "string"
+    )
+  ) {
+    return error("currentPassword and password have to be strings", 422);
+  }
+
+  if (authenicated.password !== await customHash(data.currentPassword)) {
+    return new Response("failed matching current password and old one", {
+      status: 403,
+    });
+  }
+
+  authenicated.openSessions = []
+  authenicated.password = await customHash(data.password);
+
+  DB.setWithUsername(authenicated.username, authenicated);
+
+  return new Response("suceeded");
+}
+
 export async function register(req: Request): Promise<Response> {
   let data;
 

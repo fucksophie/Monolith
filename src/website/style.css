@@ -35,7 +35,7 @@ a {
     transform: translate(-50%, -50%);
 }
 
-input[type="text"] {
+input[type="text"],input[type="password"] {
     background: var(--charcoal-lower)!important;
     border: 2px var(--tea-green-lower) solid;
     margin-top:5px;
