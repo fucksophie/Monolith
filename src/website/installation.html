@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>mônolith</title>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="style.css">
+
+        <meta name="title" content="mônolith">
+        <meta name="description" content="entierly opensource classicube.net backend implementation in Typescript">
+
+        <!-- Open Graph / Facebook -->
+        <meta property="og:type" content="website">
+        <meta property="og:title" content="mônolith">
+        <meta property="og:description" content="entierly opensource classicube.net backend implementation in Typescript">
+        <meta property="og:image" content="/banner.png">
+
+        <!-- Twitter -->
+        <meta property="twitter:card" content="summary_large_image">
+        <meta property="twitter:title" content="mônolith">
+        <meta property="twitter:description" content="entierly opensource classicube.net backend implementation in Typescript">
+        <meta property="twitter:image" content="/banner.png">
+    </head>
+
+    <body>
+        <div class="centered">
+            <h1>mônolith</h1>
+
+            <h2>Instructions</h2>
+            <p>
+                <ol style="text-align:left;">
+                    <li>Find where you installed Classicube</li>
+                    <li>In your options.txt, add the following strings
+<pre id="config">
+server-services=???/api
+http-skinserver=???/skin
+</pre>
+                    </li>
+                    <li>Restart your client, and it should be working!</li>
+                </ol>
+
+                <button id="drag" style="width:250px;height:50px;" onclick="location.href = document.referrer">click here to go back</button>
+
+                <script>
+                    let config = document.getElementById("config");
+                    config.innerText = config.innerText.replace(/\?\?\?/gm, location.origin)
+                </script>
+            </p>
+        </div>
+    </body>
+</html>
