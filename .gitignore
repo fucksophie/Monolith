@@ -1,3 +1,4 @@
 *.db
 src/skins/*.png
 !src/skins/!!missing.png
+config.json

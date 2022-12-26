@@ -1,4 +1,15 @@
-// TODO: Load from JSON
+export class Config {
+    "hashSalt": string;
+    "passwordSalt": string;
+    "ports": number[];
 
-export const hashSalt = "qwomfvtrf12pi9fhIMWE1PR";
-export const passwordSalt = "120jr10g,g1m!<!<@1me2f,.";
+    constructor(name = "../config.json") {
+        const data = JSON.parse(Deno.readTextFileSync(name));
+
+        this.hashSalt = data.hashSalt;
+        this.passwordSalt = data.passwordSalt;
+        this.ports = data.ports;
+    }
+}
+
+export const config = new Config()

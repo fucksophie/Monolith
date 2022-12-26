@@ -1,4 +1,4 @@
-import { passwordSalt } from "./config.ts";
+import { config } from "./config.ts"
 
 export function isNumeric(value: string) {
   return /^-?\d+$/.test(value);
@@ -11,7 +11,7 @@ export function error(error: string, status: number): Response {
 export async function customHash(string: string): Promise<string> {
   const encrypted = await crypto.subtle.digest(
     "SHA-512",
-    new TextEncoder().encode(passwordSalt + string),
+    new TextEncoder().encode(config.passwordSalt + string),
   );
 
   return [...new Uint8Array(encrypted)].map((byte) =>

@@ -5,7 +5,7 @@ export class Database {
   private db: DB;
 
   constructor() {
-    this.db = new DB("users.db");
+    this.db = new DB("../users.db");
     this.db.execute(`
             CREATE TABLE IF NOT EXISTS users (
                 username TEXT PRIMARY KEY,

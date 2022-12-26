@@ -1,4 +1,5 @@
 import { ConnInfo, serve } from "https://deno.land/std@0.170.0/http/server.ts";
+import { config } from "./config.ts"
 import { exists } from "./deps.ts";
 import { Database } from "./libs/Database.ts";
 import { ServerList } from "./libs/ServerList.ts";
@@ -6,8 +7,10 @@ import { login, changePassword, register } from "./routes/auth.ts";
 import { skinRender, skinUpdate, whoami } from "./routes/extra.ts";
 import { heartbeat, servers } from "./routes/heartbeat.ts";
 
+// only routes can get these exports (nothing else)
 export const serverList = new ServerList();
-export const DB = new Database(); // only routes can get these two
+export const DB = new Database();
+
 
 async function handler(req: Request, conn: ConnInfo): Promise<Response> {
   const path = new URL(req.url);
@@ -50,6 +53,6 @@ async function passOn(location: string) {
     headers: { "Content-Type": contentType },
   });
 }
-
-serve(handler, { port: 1928, hostname: "0.0.0.0" });
-serve(handler, { port: 80, hostname: "0.0.0.0" });
+config.ports.forEach(z => {
+  serve(handler, { port: z, hostname: "0.0.0.0" });
+})

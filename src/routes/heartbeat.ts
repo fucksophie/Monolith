@@ -1,5 +1,5 @@
 import { ConnInfo } from "https://deno.land/std@0.170.0/http/server.ts";
-import { hashSalt } from "../config.ts";
+import { config } from "../config.ts"
 import { error, isNumeric } from "../deps.ts";
 import { DB, serverList } from "../index.ts";
 import { Md5 } from "../libs/md5.ts";
@@ -104,7 +104,7 @@ export async function heartbeat(
     }
   }
 
-  const hash = new Md5().update(hashSalt + hbData.salt + ip.hostname)
+  const hash = new Md5().update(config.hashSalt + hbData.salt + ip.hostname) // TODO: salt probably should not be included here
     .toString();
 
   const hb = new HB(hbData);
