@@ -3,6 +3,15 @@ import { customHash, error } from "../deps.ts";
 import { DB } from "../index.ts";
 import { Session, User } from "../libs/User.ts";
 
+/**
+ * Log-in to a account.
+ * Both POST and GET requests are supported.
+ * Automatically refreshes sessions whenever attempting to login via GET. (cc client)
+ *
+ * @param {string} username
+ * @param {string} password
+ * @returns {Response} Returns a status code.
+ */
 export async function login(req: Request): Promise<Response> {
   if (req.method == "POST") {
     // Recieving post, new session trying to be created.
@@ -41,20 +50,27 @@ export async function login(req: Request): Promise<Response> {
     }
   } else {
     if (req.headers.has("cookie")) {
-      const session = req.headers.get("cookie")?.replace("session=", "");
+      const oldSession = req.headers.get("cookie")?.replace("session=", "");
 
-      if (session) {
-        const user = DB.getBySession(session!);
+      if (oldSession) {
+        const user = DB.getBySession(oldSession!);
 
         if (!user) {
           return error(`{"authenicated":false}`, 200); // no clue why the client wants 200
         } else {
+          // Create a new session, delete the last one. Refreshes it.
+          const session = new Session();
+          session.ownedBy = user.username;
+          user.openSessions.push(session);
+          user.openSessions = user.openSessions.filter(z => z.sessionID !== oldSession)
+          DB.setWithUsername(user.username, user);
+
           const resp = new Response(
-            `{"username":"${user.username}","token":"${session}"}`,
+            `{"username":"${user.username}","token":"${session.sessionID}"}`,
           );
           resp.headers.append(
             "set-cookie",
-            `session=${session}; HttpOnly; Path=/`,
+            `session=${session.sessionID}; HttpOnly; Path=/`,
           );
           return resp;
         }
@@ -67,6 +83,15 @@ export async function login(req: Request): Promise<Response> {
   return new Response();
 }
 
+/**
+ * Change the password of a user.
+ * Has to be a POST request, containing JSON data. Headers don't matter.
+ *
+ * @param {string} authenicationCookie
+ * @param {string} password
+ * @param {string} currentPassword
+ * @returns {Response} Returns a status code.
+ */
 export async function changePassword(req: Request): Promise<Response> {
   let authenicated: User | undefined;
 
@@ -112,6 +137,14 @@ export async function changePassword(req: Request): Promise<Response> {
   return new Response("suceeded");
 }
 
+/**
+ * Register a user
+ * Only use POST.
+ *
+ * @param {string} username
+ * @param {string} password
+ * @returns {Response} Returns a status code.
+ */
 export async function register(req: Request): Promise<Response> {
   let data;
 

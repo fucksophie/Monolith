@@ -11,7 +11,6 @@ import { heartbeat, servers } from "./routes/heartbeat.ts";
 export const serverList = new ServerList();
 export const DB = new Database();
 
-
 async function handler(req: Request, conn: ConnInfo): Promise<Response> {
   const path = new URL(req.url);
 

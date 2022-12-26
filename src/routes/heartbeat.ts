@@ -8,6 +8,16 @@ import { Server } from "../libs/Server.ts";
 import { User } from "../libs/User.ts";
 import * as queryString from "https://deno.land/x/querystring@v1.0.2/mod.js";
 
+/**
+ * Get all servers in a format used by the Classicube client.
+ * Has to be a GET request.
+ *
+ * @param {string} authenicationCookie
+ * @returns {Response} Returns a response like
+ * {"servers":[{"country_abbr":"NL","featured":false,..}]}
+ * for unauthenicated users, or
+ * {"servers":[{"mppass":"fdac0..."}]} for authenicated users.
+ */
 export function servers(req: Request): Response {
   let authenicated: User | undefined;
 
@@ -46,6 +56,19 @@ export function servers(req: Request): Response {
     ),
   );
 }
+/**
+ * Parse a heartbeat. Also creates a server incase it doesn't exist.
+ * Can be either POST or GET. Parses both.
+ *
+ * @param {string} max
+ * @param {string} port
+ * @param {string} public
+ * @param {string} salt
+ * @param {string} users
+ * @param {string} version
+ * @param {string} software
+ * @returns {Response} A response containing a error code or a play-link.
+ */
 export async function heartbeat(
   req: Request,
   conn: ConnInfo,
