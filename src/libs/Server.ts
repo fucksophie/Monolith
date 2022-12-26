@@ -2,7 +2,7 @@ import { Maxmind } from "https://deno.land/x/maxminddb@v1.2.0/mod.ts"
 import { Md5 } from "./md5.ts";
 import { HB } from "./Parsing.ts";
 
-const mmdb = new Maxmind(await Deno.readFile('./mmdb.mmdb'))
+const mmdb = new Maxmind(await Deno.readFile('./mmdb.db'))
 
 export class Server {
     "country": string // Evaluated once added (only once!)

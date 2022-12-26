@@ -1,0 +1,61 @@
+:root {
+    --dark-olive-green: hsla(74, 32%, 32%, 1);
+    --charcoal: hsla(219, 23%, 27%, 1);
+    --charcoal-lower: rgb(18, 22, 29);
+
+    --blue-bell: hsla(238, 42%, 70%, 1);
+    --tea-green: hsla(88, 37%, 78%, 1);
+    --tea-green-lower: rgb(135, 148, 121);
+
+    --liver-dogs: hsla(28, 67%, 44%, 1);
+}
+
+html, body {
+    font-family: system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+
+    background-color: var(--charcoal);
+    color: var(--tea-green);
+}
+
+h1 {
+    font-size: 50px;
+}
+
+a {
+    color: var(--tea-green-lower);
+    text-decoration: none;
+}
+.centered {
+    text-align: center;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+input[type="text"] {
+    background: var(--charcoal-lower)!important;
+    border: 2px var(--tea-green-lower) solid;
+    margin-top:5px;
+    border-radius: 5px;
+    height: 20px;
+    width: 200px;
+    color: var(--tea-green);
+}
+
+::placeholder { /* Chrome, Firefox, Opera, Safari 10.1+ */
+    color: var(--tea-green-lower) ;
+    opacity: 1; /* Firefox */
+}
+
+button {
+    background: linear-gradient(.90turn, var(--charcoal), 50%, var(--charcoal-lower));
+
+    border-radius: 10px;
+    width: 100px;
+    height: 40px;
+    margin-top:5px;
+    border: 2px var(--tea-green-lower) solid;
+    color: var(--tea-green);
+    font-size: 20px;
+}

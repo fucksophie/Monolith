@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>mônolith</title>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="style.css">
+
+        <meta name="title" content="mônolith">
+        <meta name="description" content="entierly opensource classicube.net backend implementation in Typescript">
+
+        <!-- Open Graph / Facebook -->
+        <meta property="og:type" content="website">
+        <meta property="og:title" content="mônolith">
+        <meta property="og:description" content="entierly opensource classicube.net backend implementation in Typescript">
+        <meta property="og:image" content="/banner.png">
+
+        <!-- Twitter -->
+        <meta property="twitter:card" content="summary_large_image">
+        <meta property="twitter:title" content="mônolith">
+        <meta property="twitter:description" content="entierly opensource classicube.net backend implementation in Typescript">
+        <meta property="twitter:image" content="/banner.png">
+    </head>
+
+
+    <body>
+        <div class="centered">
+            <h1>Register</h1>
+            <input id="username" type="text" placeholder="username"><br>
+            <input id="password" type="text" placeholder="********"><br>
+
+            <button id="submit">Submit!</button>
+        </div>
+
+        <script>
+            document.getElementById("submit").addEventListener("click", async() => {
+                const ff = await fetch("/api/register", {
+                    method: "POST",
+                    body: JSON.stringify({
+                        username: document.getElementById("username").value,
+                        password:document.getElementById("password").value
+                    })
+                })
+
+                if(ff.ok) {
+                    location.href = "/status#Account created sucesfully!"
+                } else {
+                    location.href = `/status#Failed to create account because of HTTP ${ff.status} (${ff.statusText})`
+                }
+            })
+        </script>
+    </body>
+</html>

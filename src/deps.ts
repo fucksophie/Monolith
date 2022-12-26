@@ -18,3 +18,12 @@ export async function customHash(string: string): Promise<string> {
         byte.toString(16).padStart(2, "0")
     ).join("");
 }
+
+export async function exists(string: string) {
+    try {
+        await Deno.stat(string)
+        return true;
+    } catch {
+        return false;
+    }
+}

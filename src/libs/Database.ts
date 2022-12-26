@@ -51,6 +51,8 @@ export class Database {
         user.password = rawUser.password;
         user.username = rawUser.username;
         user.openSessions = JSON.parse(rawUser.sessions) as unknown as Session[];
+
+        return user;
     }
 
     getByUsername(username: string): User|undefined {

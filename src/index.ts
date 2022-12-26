@@ -6,7 +6,7 @@ import { ServerList } from "./libs/ServerList.ts";
 import { HB, UnparsedHB } from "./libs/Parsing.ts";
 import { Session, User } from "./libs/User.ts";
 import { Server } from "./libs/Server.ts";
-import { customHash, error, isNumeric } from "./deps.ts";
+import { customHash, error, exists, isNumeric } from "./deps.ts";
 import { Database } from "./libs/Database.ts";
 
 const serverList = new ServerList();
@@ -38,8 +38,8 @@ async function handler(req: Request, conn: ConnInfo): Promise<Response> {
                 user.openSessions.push(session);
                 DB.setWithUsername(user.username, user);
 
-                const resp = new Response(`{"username":"cock","token":"${session}"}`);
-                resp.headers.append("set-cookie", `session=${session}; HttpOnly; Path=/`)
+                const resp = new Response(`{"username": "${user.username}","token":"${session.sessionID}"}`);
+                resp.headers.append("set-cookie", `session=${session.sessionID}; HttpOnly; Path=/`)
                 return resp;
             } else {
                 return error("Password is incorrect", 403)
@@ -162,32 +162,66 @@ async function handler(req: Request, conn: ConnInfo): Promise<Response> {
         }
         return new Response(`${path.origin}/play/${hash}`);
     } else if(path.pathname == "/api/servers") {
+        let authenicated: User|undefined
+
+        if(req.headers.has("cookie")) {
+            const session = req.headers.get("cookie")?.replace("session=", "")
+            if(session) authenicated = DB.getBySession(session!);
+        }
+
         return new Response(
             JSON.stringify(
                 {
                     servers:[...serverList.servers.entries()]
                         .map(z => {
-                            return {
+                            // deno-lint-ignore no-explicit-any
+                            const g: any = {
                                 country_abbr: z[1].country,
                                 featured: z[1].featured,
                                 hash: z[0],
-                                ip: z[1].ip,
                                 maxplayers: z[1].maxplayers,
-                                mppass: z[1].getMPass("cock"),
                                 name: z[1].name,
                                 players: z[1].players,
-                                port: z[1].port,
                                 software: z[1].software,
                                 uptime: Math.floor((Date.now() - z[1].firstPing)/1000),
-                                web: false
+                                web: false,
                             }
+
+                            if(authenicated) {
+                                g.mppass = z[1].getMPass(authenicated.username);
+                                g.ip = z[1].ip
+                                g.port = z[1].port
+                            }
+
+                            return g;
                         })
                 }
             )
         );
     }
 
+    if(path.pathname == "/") {
+        return new Response(Deno.readTextFileSync("website/index.html"), {headers:{"Content-Type":"text/html"}})
+    }
+
+    const location = path.pathname.substring(1);
+
+    if(await exists("website/" + location)) return passOn(location)
+    if(await exists("website/" + location+".html")) return passOn(location+".html")
+
     return new Response("404 Not Found", {status: 404})
+}
+
+function passOn(location: string) {
+    let contentType = "text/html"
+
+    if(location.endsWith(".css")) contentType = "text/css"
+    if(location.endsWith(".js")) contentType = "text/javascript"
+    if(location.endsWith(".png")) contentType = "image/png"
+
+    return new Response(Deno.readTextFileSync("website/"+location), {
+        headers:{"Content-Type":contentType}
+    })
 }
 
 
