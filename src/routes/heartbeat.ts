@@ -125,6 +125,48 @@ export async function heartbeat(
     if (typeof hbData.software !== "string") {
       return error("software has to be a string", 422);
     }
+
+    if(hbData.software.length > 30) {
+      return new Response("max 30 length for software", {
+        status: 413,
+      });
+    }
+  }
+
+  if(hbData.name.length > 30) {
+    return new Response("max 30 server name", {
+      status: 413,
+    });
+  }
+
+  if(hbData.salt.length > 30) {
+    return new Response("max 30 server username", {
+      status: 413,
+    });
+  }
+
+  if(!(+hbData.users >= 0 && +hbData.users < 255)) {
+    return new Response("users must be smaller than 255 (byte limit)", {
+      status: 400,
+    });
+  }
+
+  if(!(+hbData.max >= 0 && +hbData.max < 255)) {
+    return new Response("max must be smaller than 255 (byte limit)", {
+      status: 400,
+    });
+  }
+
+  if(!(+hbData.users > 0 && +hbData.port < 65536)) {
+    return new Response("port is not a valid port", {
+      status: 411,
+    });
+  }
+
+  if(+hbData.version !== 7) {
+    return new Response("only suports version 7", {
+      status: 411,
+    });
   }
 
   const hash = new Md5().update(config.hashSalt + hbData.salt + ip.hostname) // TODO: salt probably should not be included here

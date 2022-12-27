@@ -123,6 +123,12 @@ export async function changePassword(req: Request): Promise<Response> {
     return error("currentPassword and password have to be strings", 422);
   }
 
+  if(data.password.length > 20 || data.currentPassword.length > 20) {
+    return new Response("max 20 length for curr/old pass", {
+      status: 422,
+    });
+  }
+
   if (authenicated.password !== await customHash(data.currentPassword)) {
     return new Response("failed matching current password and old one", {
       status: 403,
@@ -165,6 +171,24 @@ export async function register(req: Request): Promise<Response> {
     )
   ) {
     return error("username and password have to be strings", 422);
+  }
+
+  if(data.username.length > 30) {
+    return new Response("max 30 length for username", {
+      status: 413,
+    });
+  }
+
+  if(!/^[A-Za-z0-9._]*$/gm.test(data.username)) {
+    return new Response("username does not pass validation", {
+      status: 417,
+    });
+  }
+
+  if(data.password.length > 20) {
+    return new Response("max 20 length for curr/old pass", {
+      status: 413,
+    });
   }
 
   if (DB.getByUsername(data.username)) {
