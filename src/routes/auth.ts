@@ -125,8 +125,8 @@ export async function changePassword(req: Request): Promise<Response> {
     return error("currentPassword and password have to be strings", 422);
   }
 
-  if (data.password.length > 20 || data.currentPassword.length > 20) {
-    return new Response("max 20 length for curr/old pass", {
+  if (data.password.length > 50 || data.currentPassword.length > 50) {
+    return new Response("max 50 length for curr/old pass", {
       status: 422,
     });
   }
@@ -193,8 +193,8 @@ export async function register(req: Request): Promise<Response> {
     });
   }
 
-  if (data.password.length > 20) {
-    return new Response("max 20 length for curr/old pass", {
+  if (data.password.length > 50) {
+    return new Response("max 50 length for curr/old pass", {
       status: 413,
     });
   }
