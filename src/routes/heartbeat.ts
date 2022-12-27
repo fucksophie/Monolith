@@ -1,5 +1,5 @@
 import { ConnInfo } from "https://deno.land/std@0.170.0/http/server.ts";
-import { config } from "../config.ts"
+import { config } from "../config.ts";
 import { error, isNumeric } from "../deps.ts";
 import { DB, serverList } from "../index.ts";
 import { Md5 } from "../libs/md5.ts";
@@ -76,7 +76,10 @@ export async function heartbeat(
   const path = new URL(req.url);
 
   let hbData: UnparsedHB;
-  const ip = conn.remoteAddr as Deno.NetAddr;
+  let ip = (conn.remoteAddr as Deno.NetAddr).hostname;
+  if (config.trustXForwardedFor) {
+    ip = req.headers.get("x-forwarded-for")!;
+  }
 
   if (req.method == "POST") {
     try {
@@ -126,62 +129,62 @@ export async function heartbeat(
       return error("software has to be a string", 422);
     }
 
-    if(hbData.software.length > 30) {
+    if (hbData.software.length > 30) {
       return new Response("max 30 length for software", {
         status: 413,
       });
     }
   }
 
-  if(hbData.name.length > 30) {
+  if (hbData.name.length > 30) {
     return new Response("max 30 server name", {
       status: 413,
     });
   }
 
-  if(hbData.salt.length > 30) {
+  if (hbData.salt.length > 30) {
     return new Response("max 30 server salt", {
       status: 413,
     });
   }
 
-  if(hbData.salt.length < 10) {
+  if (hbData.salt.length < 10) {
     return new Response("min 10 server salt", {
       status: 422,
     });
   }
 
-  if(hbData.name.length < 3) {
+  if (hbData.name.length < 3) {
     return new Response("min 3 server name", {
       status: 422,
     });
   }
 
-  if(!(+hbData.users >= 0 && +hbData.users < 255)) {
+  if (!(+hbData.users >= 0 && +hbData.users < 255)) {
     return new Response("users must be smaller than 255 (byte limit)", {
       status: 400,
     });
   }
 
-  if(!(+hbData.max >= 0 && +hbData.max < 255)) {
+  if (!(+hbData.max >= 0 && +hbData.max < 255)) {
     return new Response("max must be smaller than 255 (byte limit)", {
       status: 400,
     });
   }
 
-  if(!(+hbData.port > 0 && +hbData.port < 65536)) {
+  if (!(+hbData.port > 0 && +hbData.port < 65536)) {
     return new Response("port is not a valid port", {
       status: 411,
     });
   }
 
-  if(+hbData.version !== 7) {
+  if (+hbData.version !== 7) {
     return new Response("only suports version 7", {
       status: 411,
     });
   }
 
-  const hash = new Md5().update(config.hashSalt + hbData.salt + ip.hostname) // TODO: salt probably should not be included here
+  const hash = new Md5().update(config.hashSalt + hbData.salt + ip) // TODO: salt probably should not be included here
     .toString();
 
   const hb = new HB(hbData);
@@ -191,7 +194,7 @@ export async function heartbeat(
       `(CREATED) Server update from ${hb.name}. Users: ${hb.users}, salt: ${hb.salt}, hash: ${hash}`,
     );
 
-    const server = new Server(hash, ip.hostname, hb);
+    const server = new Server(hash, ip, hb);
 
     server.hooks.onDie.push(() => {
       console.log("Hook exploded. Removing from serverlist.");

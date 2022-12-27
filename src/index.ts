@@ -1,9 +1,9 @@
 import { ConnInfo, serve } from "https://deno.land/std@0.170.0/http/server.ts";
-import { config } from "./config.ts"
+import { config } from "./config.ts";
 import { exists } from "./deps.ts";
 import { Database } from "./libs/Database.ts";
 import { ServerList } from "./libs/ServerList.ts";
-import { login, changePassword, register } from "./routes/auth.ts";
+import { changePassword, login, register } from "./routes/auth.ts";
 import { skinRender, skinUpdate, whoami } from "./routes/extra.ts";
 import { heartbeat, servers } from "./routes/heartbeat.ts";
 
@@ -51,6 +51,6 @@ async function passOn(location: string) {
     headers: { "Content-Type": contentType },
   });
 }
-config.ports.forEach(z => {
+config.ports.forEach((z) => {
   serve(handler, { port: z, hostname: "0.0.0.0" });
-})
+});

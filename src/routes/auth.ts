@@ -62,7 +62,9 @@ export async function login(req: Request): Promise<Response> {
           const session = new Session();
           session.ownedBy = user.username;
           user.openSessions.push(session);
-          user.openSessions = user.openSessions.filter(z => z.sessionID !== oldSession)
+          user.openSessions = user.openSessions.filter((z) =>
+            z.sessionID !== oldSession
+          );
           DB.setWithUsername(user.username, user);
 
           const resp = new Response(
@@ -123,7 +125,7 @@ export async function changePassword(req: Request): Promise<Response> {
     return error("currentPassword and password have to be strings", 422);
   }
 
-  if(data.password.length > 20 || data.currentPassword.length > 20) {
+  if (data.password.length > 20 || data.currentPassword.length > 20) {
     return new Response("max 20 length for curr/old pass", {
       status: 422,
     });
@@ -135,7 +137,7 @@ export async function changePassword(req: Request): Promise<Response> {
     });
   }
 
-  authenicated.openSessions = []
+  authenicated.openSessions = [];
   authenicated.password = await customHash(data.password);
 
   DB.setWithUsername(authenicated.username, authenicated);
@@ -173,31 +175,31 @@ export async function register(req: Request): Promise<Response> {
     return error("username and password have to be strings", 422);
   }
 
-  if(data.username.length > 30) {
+  if (data.username.length > 30) {
     return new Response("max 30 length for username", {
       status: 413,
     });
   }
 
-  if(data.username.length < 3) {
+  if (data.username.length < 3) {
     return new Response("min 3 length for username", {
       status: 422,
     });
   }
 
-  if(!/^[A-Za-z0-9._]*$/gm.test(data.username)) {
+  if (!/^[A-Za-z0-9._]*$/gm.test(data.username)) {
     return new Response("username does not pass validation", {
       status: 417,
     });
   }
 
-  if(data.password.length > 20) {
+  if (data.password.length > 20) {
     return new Response("max 20 length for curr/old pass", {
       status: 413,
     });
   }
 
-  if(data.password.length < 6) {
+  if (data.password.length < 6) {
     return new Response("min 6 length for password", {
       status: 422,
     });

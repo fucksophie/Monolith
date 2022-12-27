@@ -1,5 +1,5 @@
 export const sessions = new Map<string, string[]>();
-export const defaultSessionTime = 30 * 60000
+export const defaultSessionTime = 30 * 60000;
 
 export class Session {
   "expiryTime": number;

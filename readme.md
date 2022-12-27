@@ -18,6 +18,18 @@ in typescript.
 2. Extras (skin): [doc.deno.land/yourfriendoss/Monolith/routes/extra.ts](https://doc.deno.land/https://raw.githubusercontent.com/yourfriendoss/Monolith/main/src/routes/extra.ts)
 3. Heartbeat/server: [doc.deno.land/yourfriendoss/Monolith/routes/heartbeat.ts](https://doc.deno.land/https://raw.githubusercontent.com/yourfriendoss/Monolith/main/src/routes/heartbeat.ts)
 
+## config.json example
+Make sure hashSalt and passwordSalt are as randomly-generated as possible.
+
+```
+{
+    "hashSalt": "MyCoolHashSalt999:)",
+    "passwordSalt": "AwsomePasswordSalt.GoodForSalting",
+    "ports": [ 8008 ],
+    "trustXForwardedFor": false
+}
+```
+
 ## Screenshots
 ![](https://imgur.com/QgEOqwJ.png)
 ![](https://imgur.com/lvHA3zQ.png)
