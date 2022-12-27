@@ -7,7 +7,6 @@ import { login, changePassword, register } from "./routes/auth.ts";
 import { skinRender, skinUpdate, whoami } from "./routes/extra.ts";
 import { heartbeat, servers } from "./routes/heartbeat.ts";
 
-// only routes can get these exports (nothing else)
 export const serverList = new ServerList();
 export const DB = new Database();
 
