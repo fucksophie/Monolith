@@ -1,4 +1,4 @@
-import { exists } from "../deps.ts";
+import { error, exists } from "../deps.ts";
 import { DB } from "../index.ts";
 import { User } from "../libs/User.ts";
 
@@ -22,7 +22,7 @@ export function whoami(req: Request) {
       `{"username":"${authenicated.username}","sessions":${authenicated.openSessions.length}}`,
     );
   } else {
-    return new Response("", { status: 403 });
+    return error("authenication failed", 403);
   }
 }
 /**
@@ -45,7 +45,7 @@ export async function skinUpdate(req: Request) {
   if (authenicated) {
     const data = await req.arrayBuffer();
     if (data.byteLength > 5e+6) {
-      return new Response("", { status: 413 });
+      return error("provided file is too large", 413);
     }
 
     Deno.writeFileSync(
@@ -54,7 +54,7 @@ export async function skinUpdate(req: Request) {
     );
     return new Response(`done`);
   } else {
-    return new Response("", { status: 403 });
+    return error("authenication failed", 403);
   }
 }
 /**

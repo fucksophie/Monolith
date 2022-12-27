@@ -59,7 +59,7 @@
                 if(ff.ok) {
                     location.href = "/status#Password changed! Please log back in."
                 } else {
-                    location.href = `/status#Failed to change password because of HTTP ${ff.status} (${ff.statusText})`
+                    location.href = `/status#Failed to change password because of ${await ff.text()} (${ff.status})`
                 }
             })
 
@@ -78,7 +78,7 @@
                     if(skinUpdate.ok) {
                         location.href = "/status#Skin updated!"
                     } else {
-                        location.href = `/status#Failed to create account because of HTTP ${skinUpdate.status} (${skinUpdate.statusText})`
+                        location.href = `/status#Failed to create account because of ${await ff.text()} (${ff.status})`
                     }
                 };
                 input.click();

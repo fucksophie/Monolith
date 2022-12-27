@@ -1,6 +1,6 @@
 import { ConnInfo, serve } from "https://deno.land/std@0.170.0/http/server.ts";
 import { config } from "./config.ts";
-import { exists } from "./deps.ts";
+import { error, exists } from "./deps.ts";
 import { Database } from "./libs/Database.ts";
 import { ServerList } from "./libs/ServerList.ts";
 import { changePassword, login, register } from "./routes/auth.ts";
@@ -36,7 +36,7 @@ async function handler(req: Request, conn: ConnInfo): Promise<Response> {
     return await passOn(location + ".html");
   }
 
-  return new Response("404 Not Found", { status: 404 });
+  return error("404 Not Found", 404);
 }
 
 async function passOn(location: string) {

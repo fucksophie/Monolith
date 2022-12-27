@@ -130,58 +130,41 @@ export async function heartbeat(
     }
 
     if (hbData.software.length > 30) {
-      return new Response("max 30 length for software", {
-        status: 413,
-      });
+      return error("max 30 length for software", 413);
     }
   }
 
   if (hbData.name.length > 30) {
-    return new Response("max 30 server name", {
-      status: 413,
-    });
+    return error("max 30 server name", 413);
   }
 
   if (hbData.salt.length > 30) {
-    return new Response("max 30 server salt", {
-      status: 413,
-    });
+    return error("max 30 server salt", 413);
+
   }
 
   if (hbData.salt.length < 10) {
-    return new Response("min 10 server salt", {
-      status: 422,
-    });
+    return error("min 10 server salt", 422);
   }
 
   if (hbData.name.length < 3) {
-    return new Response("min 3 server name", {
-      status: 422,
-    });
+    return error("min 3 server name", 422);
   }
 
   if (!(+hbData.users >= 0 && +hbData.users < 255)) {
-    return new Response("users must be smaller than 255 (byte limit)", {
-      status: 400,
-    });
+    return error("users must be smaller than 255 (byte limit)", 400);
   }
 
   if (!(+hbData.max >= 0 && +hbData.max < 255)) {
-    return new Response("max must be smaller than 255 (byte limit)", {
-      status: 400,
-    });
+    return error("max must be smaller than 255 (byte limit)", 400);
   }
 
   if (!(+hbData.port > 0 && +hbData.port < 65536)) {
-    return new Response("port is not a valid port", {
-      status: 411,
-    });
+    return error("port is not a valid port", 411);
   }
 
   if (+hbData.version !== 7) {
-    return new Response("only suports version 7", {
-      status: 411,
-    });
+    return error("only suports version 7", 411);
   }
 
   const hash = new Md5().update(config.hashSalt + hbData.salt + ip) // TODO: salt probably should not be included here

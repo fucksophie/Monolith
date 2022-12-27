@@ -79,10 +79,10 @@ export async function login(req: Request): Promise<Response> {
       } else {
         return error(`{"authenicated":false}`, 200); // no clue why the client wants 200
       }
+    } else {
+      return error("Missing cookie in a GET request", 400);
     }
   }
-
-  return new Response();
 }
 
 /**
@@ -102,7 +102,8 @@ export async function changePassword(req: Request): Promise<Response> {
     if (session) authenicated = DB.getBySession(session!);
   }
 
-  if (!authenicated) return new Response("", { status: 403 });
+  if (!authenicated) return error("Authenication failed", 403);
+
 
   let data;
 
@@ -126,15 +127,11 @@ export async function changePassword(req: Request): Promise<Response> {
   }
 
   if (data.password.length > 50 || data.currentPassword.length > 50) {
-    return new Response("max 50 length for curr/old pass", {
-      status: 422,
-    });
+    return error("max 50 length for curr/old pass", 422);
   }
 
   if (authenicated.password !== await customHash(data.currentPassword)) {
-    return new Response("failed matching current password and old one", {
-      status: 403,
-    });
+    return error("failed matching current password and old one", 403)
   }
 
   authenicated.openSessions = [];
@@ -176,33 +173,23 @@ export async function register(req: Request): Promise<Response> {
   }
 
   if (data.username.length > 30) {
-    return new Response("max 30 length for username", {
-      status: 413,
-    });
+    return error("max 30 length for username", 413);
   }
 
   if (data.username.length < 3) {
-    return new Response("min 3 length for username", {
-      status: 422,
-    });
+    return error("min 3 length for username", 422);
   }
 
   if (!/^[A-Za-z0-9._]*$/gm.test(data.username)) {
-    return new Response("username does not pass validation", {
-      status: 417,
-    });
+    return error("username does not pass validation", 417);
   }
 
   if (data.password.length > 50) {
-    return new Response("max 50 length for curr/old pass", {
-      status: 413,
-    });
+    return error("max 50 length for curr/old pass", 413);
   }
 
   if (data.password.length < 6) {
-    return new Response("min 6 length for password", {
-      status: 422,
-    });
+    return error("min 6 length for password", 422);
   }
 
   if (DB.getByUsername(data.username)) {

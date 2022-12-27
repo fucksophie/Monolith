@@ -44,7 +44,7 @@
                 if(ff.ok) {
                     location.href = "/settings"
                 } else {
-                    location.href = `/status#Failed to login because of HTTP ${ff.status} (${ff.statusText})`
+                    location.href = `/status#Failed to login because of ${await ff.text()} (${ff.status})`
                 }
             })
         </script>
