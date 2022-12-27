@@ -169,7 +169,7 @@ export async function heartbeat(
     });
   }
 
-  if(!(+hbData.users > 0 && +hbData.port < 65536)) {
+  if(!(+hbData.port > 0 && +hbData.port < 65536)) {
     return new Response("port is not a valid port", {
       status: 411,
     });
