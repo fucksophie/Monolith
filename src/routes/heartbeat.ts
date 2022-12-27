@@ -140,8 +140,20 @@ export async function heartbeat(
   }
 
   if(hbData.salt.length > 30) {
-    return new Response("max 30 server username", {
+    return new Response("max 30 server salt", {
       status: 413,
+    });
+  }
+
+  if(hbData.salt.length < 10) {
+    return new Response("min 10 server salt", {
+      status: 422,
+    });
+  }
+
+  if(hbData.name.length < 3) {
+    return new Response("min 3 server name", {
+      status: 422,
     });
   }
 

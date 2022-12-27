@@ -179,6 +179,12 @@ export async function register(req: Request): Promise<Response> {
     });
   }
 
+  if(data.username.length < 3) {
+    return new Response("min 3 length for username", {
+      status: 422,
+    });
+  }
+
   if(!/^[A-Za-z0-9._]*$/gm.test(data.username)) {
     return new Response("username does not pass validation", {
       status: 417,
@@ -188,6 +194,12 @@ export async function register(req: Request): Promise<Response> {
   if(data.password.length > 20) {
     return new Response("max 20 length for curr/old pass", {
       status: 413,
+    });
+  }
+
+  if(data.password.length < 6) {
+    return new Response("min 6 length for password", {
+      status: 422,
     });
   }
 
