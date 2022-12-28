@@ -138,9 +138,8 @@ export async function heartbeat(
     return error("max 30 server name", 413);
   }
 
-  if (hbData.salt.length > 30) {
-    return error("max 30 server salt", 413);
-
+  if (hbData.salt.length > 60) {
+    return error("max 60 server salt", 413);
   }
 
   if (hbData.salt.length < 10) {
