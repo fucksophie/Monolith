@@ -19,16 +19,7 @@ export class HB {
   "version": number;
   "software": string;
 
-  constructor(hb: {
-    "max": string; // coerced to number
-    "name": string;
-    "port": string;
-    "public": string;
-    "salt": string;
-    "users": string;
-    "version": string;
-    "software": string;
-  }) {
+  constructor(hb: UnparsedHB) {
     this.max = +hb.max;
     this.name = hb.name;
     this.port = +hb.port;
